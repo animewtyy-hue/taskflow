@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block title %}Kanban - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold">Kanban Board</h4>
+  <a href="{{ url_for('dashboard.new_task') }}" class="btn btn-primary btn-sm">
+    + {{ t.new_task }}
+  </a>
+</div>
+
+<div class="row g-3">
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0">{{ t.todo }}</h6>
+        <span class="badge bg-secondary" id="count-todo">{{ todo|length }}</span>
+      </div>
+      <div class="kanban-col" id="todo">
+        {% for task in todo %}
+        <div class="kanban-card" data-id="{{ task.id }}">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="fw-bold small">{{ task.title }}</span>
+            <span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
+          </div>
+          {% if task.description %}
+          <p class="text-muted small mb-1">{{ task.description[:50] }}</p>
+          {% endif %}
+          {% if task.due_date %}
+          <small class="text-danger d-block mb-1">{{ task.due_date.strftime('%Y-%m-%d') }}</small>
+          {% endif %}
+          <div class="d-flex gap-1">
+            <a href="{{ url_for('dashboard.edit_task', id=task.id) }}" class="btn btn-sm btn-outline-primary py-0">edit</a>
+            <a href="{{ url_for('dashboard.task_detail', id=task.id) }}" class="btn btn-sm btn-outline-info py-0">view</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0">{{ t.in_progress }}</h6>
+        <span class="badge bg-warning" id="count-in_progress">{{ in_progress|length }}</span>
+      </div>
+      <div class="kanban-col" id="in_progress">
+        {% for task in in_progress %}
+        <div class="kanban-card" data-id="{{ task.id }}">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="fw-bold small">{{ task.title }}</span>
+            <span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
+          </div>
+          {% if task.description %}
+          <p class="text-muted small mb-1">{{ task.description[:50] }}</p>
+          {% endif %}
+          {% if task.due_date %}
+          <small class="text-danger d-block mb-1">{{ task.due_date.strftime('%Y-%m-%d') }}</small>
+          {% endif %}
+          <div class="d-flex gap-1">
+            <a href="{{ url_for('dashboard.edit_task', id=task.id) }}" class="btn btn-sm btn-outline-primary py-0">edit</a>
+            <a href="{{ url_for('dashboard.task_detail', id=task.id) }}" class="btn btn-sm btn-outline-info py-0">view</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0">{{ t.done }}</h6>
+        <span class="badge bg-success" id="count-done">{{ done|length }}</span>
+      </div>
+      <div class="kanban-col" id="done">
+        {% for task in done %}
+        <div class="kanban-card" data-id="{{ task.id }}">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="fw-bold small">{{ task.title }}</span>
+            <span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
+          </div>
+          {% if task.description %}
+          <p class="text-muted small mb-1">{{ task.description[:50] }}</p>
+          {% endif %}
+          {% if task.due_date %}
+          <small class="text-danger d-block mb-1">{{ task.due_date.strftime('%Y-%m-%d') }}</small>
+          {% endif %}
+          <div class="d-flex gap-1">
+            <a href="{{ url_for('dashboard.edit_task', id=task.id) }}" class="btn btn-sm btn-outline-primary py-0">edit</a>
+            <a href="{{ url_for('dashboard.task_detail', id=task.id) }}" class="btn btn-sm btn-outline-info py-0">view</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .kanban-col {
+    min-height: 400px;
+    padding: 8px;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+  .kanban-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    cursor: grab;
+    border-right: 3px solid #6366f1;
+  }
+  .kanban-card:active {
+    cursor: grabbing;
+  }
+  .sortable-ghost {
+    opacity: 0.4;
+    background: #ede9fe;
+    border: 2px dashed #6366f1;
+  }
+  .sortable-chosen {
+    box-shadow: 0 8px 25px rgba(99,102,241,0.3);
+  }
+  body.dark .kanban-col { background: #1e293b; }
+  body.dark .kanban-card { background: #334155; color: #e2e8f0; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+window.onload = function() {
+  document.querySelectorAll('.kanban-col').forEach(function(col) {
+    new Sortable(col, {
+      group: 'shared',
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onEnd: function(evt) {
+        var taskId = evt.item.getAttribute('data-id');
+        var newStatus = evt.to.id;
+        fetch('/api/v1/tasks/' + taskId, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success) {
+            updateCounts();
+            showToast('Updated!');
+          }
+        });
+      }
+    });
+  });
+};
+
+function updateCounts() {
+  ['todo', 'in_progress', 'done'].forEach(function(id) {
+    var col = document.getElementById(id);
+    var badge = document.getElementById('count-' + id);
+    if (col && badge) {
+      badge.textContent = col.querySelectorAll('.kanban-card').length;
+    }
+  });
+}
+
+function showToast(msg) {
+  var toast = document.createElement('div');
+  toast.className = 'position-fixed bottom-0 start-0 m-3 alert alert-success';
+  toast.style.zIndex = '9999';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 2000);
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistant - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold">AI Task Generator</h4>
+</div>
+
+<!-- قسم الإدخال -->
+<div class="card p-4 mb-4">
+  <h6 class="fw-bold mb-3">What is your goal?</h6>
+  <div class="input-group">
+    <input type="text"
+           id="goalInput"
+           class="form-control form-control-lg"
+           placeholder="Example: Launch an e-commerce website">
+    <button class="btn btn-primary px-4"
+            onclick="generateTasks()"
+            id="generateBtn">
+      Generate Tasks
+    </button>
+  </div>
+  <small class="text-muted mt-2">
+    AI will generate 5-8 practical tasks to achieve your goal
+  </small>
+</div>
+
+<!-- loading -->
+<div id="loadingDiv" class="text-center py-5 d-none">
+  <div class="spinner-border text-primary mb-3"></div>
+  <p class="text-muted">AI is generating your tasks...</p>
+</div>
+
+<!-- النتائج -->
+<div id="resultsDiv" class="d-none">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold" id="goalTitle"></h6>
+    <button class="btn btn-success"
+            onclick="saveAllTasks()"
+            id="saveBtn">
+      Save All Tasks
+    </button>
+  </div>
+
+  <div class="row g-3" id="tasksContainer"></div>
+
+  <div id="savedMsg" class="alert alert-success mt-3 d-none">
+    Tasks saved successfully! 
+    <a href="{{ url_for('dashboard.tasks') }}">View Tasks</a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let generatedTasks = [];
+
+function generateTasks() {
+  var goal = document.getElementById('goalInput').value.trim();
+  if (!goal) {
+    alert('Please enter your goal first');
+    return;
+  }
+
+  document.getElementById('loadingDiv').classList.remove('d-none');
+  document.getElementById('resultsDiv').classList.add('d-none');
+  document.getElementById('generateBtn').disabled = true;
+
+  fetch('/ai/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ goal: goal })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    document.getElementById('loadingDiv').classList.add('d-none');
+    document.getElementById('generateBtn').disabled = false;
+
+    if (data.success) {
+      generatedTasks = data.tasks;
+      displayTasks(data.tasks, data.goal);
+    } else {
+      alert('Error: ' + data.error);
+    }
+  })
+  .catch(function(err) {
+    document.getElementById('loadingDiv').classList.add('d-none');
+    document.getElementById('generateBtn').disabled = false;
+    alert('Connection error, please try again');
+  });
+}
+
+function displayTasks(tasks, goal) {
+  document.getElementById('goalTitle').textContent = 'Goal: ' + goal;
+  document.getElementById('resultsDiv').classList.remove('d-none');
+  document.getElementById('savedMsg').classList.add('d-none');
+
+  var container = document.getElementById('tasksContainer');
+  container.innerHTML = '';
+
+  var priorityColors = {
+    'high':   'danger',
+    'medium': 'warning',
+    'low':    'success'
+  };
+
+  tasks.forEach(function(task, index) {
+    var color = priorityColors[task.priority] || 'secondary';
+    var col   = document.createElement('div');
+    col.className = 'col-md-6';
+    col.innerHTML =
+      '<div class="card p-3 h-100 border-start border-4 border-' + color + '">' +
+        '<div class="d-flex justify-content-between align-items-start mb-2">' +
+          '<h6 class="fw-bold mb-0">' + task.title + '</h6>' +
+          '<span class="badge bg-' + color + '">' + task.priority + '</span>' +
+        '</div>' +
+        '<p class="text-muted small mb-0">' + task.description + '</p>' +
+      '</div>';
+    container.appendChild(col);
+  });
+}
+
+function saveAllTasks() {
+  if (generatedTasks.length === 0) return;
+
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('saveBtn').textContent = 'Saving...';
+
+  fetch('/ai/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tasks: generatedTasks })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    document.getElementById('saveBtn').disabled = false;
+    document.getElementById('saveBtn').textContent = 'Save All Tasks';
+
+    if (data.success) {
+      document.getElementById('savedMsg').classList.remove('d-none');
+    } else {
+      alert('Error saving tasks');
+    }
+  });
+}
+
+document.getElementById('goalInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') generateTasks();
+});
+</script>
+{% endblock %}

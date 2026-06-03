@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}{{ t.admin }} - TaskFlow{% endblock %}
+
+{% block content %}
+<h4 class="fw-bold mb-4"> {{ t.admin }}</h4>
+
+<!-- إحصائيات عامة -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-1 fw-bold text-primary">{{ stats.users }}</div>
+      <div class="text-muted">Users</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-1 fw-bold text-warning">{{ stats.tasks }}</div>
+      <div class="text-muted">{{ t.tasks }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-1 fw-bold text-info">{{ stats.projects }}</div>
+      <div class="text-muted">{{ t.projects }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-1 fw-bold text-success">{{ stats.done }}</div>
+      <div class="text-muted">{{ t.done }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- إدارة المستخدمين -->
+<div class="card p-3 mb-4">
+  <h6 class="fw-bold mb-3"> Users</h6>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span class="badge bg-{{
+              'danger' if user.role == 'admin' else 'secondary' }}">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <form method="POST"
+                    action="{{ url_for('admin.toggle_role',
+                              id=user.id) }}">
+                <button class="btn btn-sm btn-outline-warning">
+                  Toggle Role
+                </button>
+              </form>
+              <form method="POST"
+                    action="{{ url_for('admin.delete_user',
+                              id=user.id) }}">
+                <button class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Delete user?')">
+                  {{ t.delete }}
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- آخر المهام -->
+<div class="card p-3">
+  <h6 class="fw-bold mb-3"> {{ t.recent_tasks }}</h6>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>{{ t.task }}</th>
+          <th>User</th>
+          <th>{{ t.status }}</th>
+          <th>{{ t.priority }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in recent_tasks %}
+        <tr>
+          <td>{{ task.title }}</td>
+          <td>{{ task.owner.username }}</td>
+          <td>
+            <span class="badge badge-{{ task.status }}">
+              {{ task.status }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-{{ task.priority }}">
+              {{ task.priority }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

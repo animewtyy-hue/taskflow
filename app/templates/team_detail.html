@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}{{ team.name }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"> {{ team.name }}</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('team.index') }}"
+       class="btn btn-outline-secondary btn-sm">
+      Back
+    </a>
+    {% if is_owner %}
+    <form method="POST"
+          action="{{ url_for('team.delete_team', id=team.id) }}">
+      <button class="btn btn-outline-danger btn-sm"
+              onclick="return confirm('Delete team?')">
+        Delete Team
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- الأعضاء -->
+  <div class="col-md-5">
+    <div class="card p-3 mb-3">
+      <h6 class="fw-bold mb-3">
+         Members
+        <span class="badge bg-primary">{{ members|length }}</span>
+      </h6>
+      {% for member in members %}
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-primary text-white d-flex
+                      align-items-center justify-content-center"
+               style="width:35px;height:35px;font-size:0.9rem;">
+            {{ member.user.username[0].upper() }}
+          </div>
+          <div>
+            <div class="fw-bold small">{{ member.user.username }}</div>
+            <div class="text-muted" style="font-size:0.75rem;">
+              {{ member.user.email }}
+            </div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <span class="badge bg-{{
+            'danger' if member.role == 'admin' else 'secondary' }}">
+            {{ member.role }}
+          </span>
+          {% if is_owner and member.user_id != current_user.id %}
+          <form method="POST"
+                action="{{ url_for('team.remove_member',
+                          team_id=team.id,
+                          user_id=member.user_id) }}">
+            <button class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Remove member?')">
+              <i class="bi bi-x"></i>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- دعوة عضو -->
+    {% if is_owner %}
+    <div class="card p-3 mb-3">
+      <h6 class="fw-bold mb-3"> Invite Member</h6>
+      <form method="POST"
+            action="{{ url_for('team.invite_member', id=team.id) }}">
+        <div class="input-group">
+          <input type="email" name="email"
+                 class="form-control"
+                 placeholder="member@email.com" required>
+          <button class="btn btn-primary">Invite</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- الدعوات المعلقة -->
+    {% if invites %}
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"> Pending Invites</h6>
+      {% for invite in invites %}
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <small class="text-muted">{{ invite.email }}</small>
+        <div class="input-group input-group-sm" style="width:auto">
+          <input type="text" class="form-control form-control-sm"
+                 value="{{ url_for('team.join_team',
+                           token=invite.token, _external=True) }}"
+                 readonly style="width:200px;font-size:0.7rem;">
+          <button class="btn btn-sm btn-outline-secondary"
+                  onclick="copyLink(this)">
+            Copy
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- مهام الفريق -->
+  <div class="col-md-7">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"> Team Tasks</h6>
+      {% if tasks %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Task</th>
+              <th>Member</th>
+              <th>Priority</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+            <tr>
+              <td>{{ task.title }}</td>
+              <td>
+                <small>{{ task.owner.username }}</small>
+              </td>
+              <td>
+                <span class="badge badge-{{ task.priority }}">
+                  {{ task.priority }}
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-{{ task.status }}">
+                  {{ task.status }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center py-3">No tasks yet </p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyLink(btn) {
+  const input = btn.previousElementSibling;
+  input.select();
+  document.execCommand('copy');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 2000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.name }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"> {{ project.name }}</h4>
+  <a href="{{ url_for('dashboard.projects') }}"
+     class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-right"></i> {{ t.back }}
+  </a>
+</div>
+
+<!-- إحصائيات المشروع -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-1 fw-bold text-primary">{{ total }}</div>
+      <div class="text-muted">{{ t.total }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-1 fw-bold text-success">{{ done }}</div>
+      <div class="text-muted">{{ t.done }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-1 fw-bold text-warning">{{ total - done }}</div>
+      <div class="text-muted">{{ t.todo }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- شريط التقدم -->
+{% if total > 0 %}
+<div class="card p-3 mb-4">
+  <div class="d-flex justify-content-between mb-1">
+    <span class="fw-bold">{{ t.progress }}</span>
+    <span class="fw-bold text-success">{{ percent }}%</span>
+  </div>
+  <div class="progress" style="height:12px;">
+    <div class="progress-bar bg-success"
+         style="width: {{ percent }}%"></div>
+  </div>
+</div>
+{% endif %}
+
+{% if project.description %}
+<div class="card p-3 mb-4">
+  <h6 class="fw-bold mb-2"> {{ t.description }}</h6>
+  <p class="text-muted mb-0">{{ project.description }}</p>
+</div>
+{% endif %}
+
+<!-- مهام المشروع -->
+<div class="card p-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold mb-0"> {{ t.tasks }}</h6>
+    <a href="{{ url_for('dashboard.new_task', project_id=project.id) }}"
+       class="btn btn-sm btn-primary">
+      + {{ t.add_task }}
+    </a>
+  </div>
+
+  {% if tasks %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>{{ t.task }}</th>
+          <th>{{ t.priority }}</th>
+          <th>{{ t.status }}</th>
+          <th>{{ t.due_date }}</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr>
+          <td>{{ task.title }}</td>
+          <td>
+            <span class="badge badge-{{ task.priority }}">
+              {{ task.priority }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-{{ task.status }}">
+              {{ task.status }}
+            </span>
+          </td>
+          <td>
+            {% if task.due_date %}
+              {{ task.due_date.strftime('%Y-%m-%d') }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('dashboard.edit_task', id=task.id) }}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="POST"
+                    action="{{ url_for('dashboard.delete_task',
+                              id=task.id) }}">
+                <button class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Delete?')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <p class="text-muted text-center py-3">
+    {{ t.no_tasks }} 
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

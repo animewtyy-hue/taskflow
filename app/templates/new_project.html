@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}مشروع جديد - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold">➕ إنشاء مشروع جديد</h4>
+  <a href="{{ url_for('dashboard.projects') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i> رجوع
+  </a>
+</div>
+
+<div class="card p-4" style="max-width: 600px;">
+  <form method="POST">
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">اسم المشروع *</label>
+      <input type="text" name="name"
+             class="form-control form-control-lg"
+             placeholder="اسم المشروع" required>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label fw-bold">وصف المشروع</label>
+      <textarea name="description" class="form-control"
+                rows="4"
+                placeholder="وصف مختصر للمشروع (اختياري)"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 py-2">
+      <i class="bi bi-plus-lg"></i> إنشاء المشروع
+    </button>
+
+  </form>
+</div>
+{% endblock %}

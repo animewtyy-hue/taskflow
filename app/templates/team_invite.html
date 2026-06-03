@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}New Team - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"> Create New Team</h4>
+  <a href="{{ url_for('team.index') }}"
+     class="btn btn-outline-secondary btn-sm">
+    Back
+  </a>
+</div>
+
+<div class="card p-4" style="max-width:500px;">
+  <form method="POST">
+    <div class="mb-3">
+      <label class="form-label fw-bold">Team Name *</label>
+      <input type="text" name="name"
+             class="form-control form-control-lg"
+             placeholder="My Awesome Team" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 py-2">
+      Create Team
+    </button>
+  </form>
+</div>
+{% endblock %}

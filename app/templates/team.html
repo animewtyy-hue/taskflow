@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Teams - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"> Teams</h4>
+  <a href="{{ url_for('team.new_team') }}" class="btn btn-primary btn-sm">
+    + New Team
+  </a>
+</div>
+
+<!-- الفرق التي أنشأتها -->
+{% if owned_teams %}
+<h6 class="fw-bold text-muted mb-3">Your Teams</h6>
+<div class="row g-3 mb-4">
+  {% for team in owned_teams %}
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <h6 class="fw-bold">{{ team.name }}</h6>
+        <span class="badge bg-danger">Owner</span>
+      </div>
+      <p class="text-muted small mb-2">
+        {{ team.members|length }} member(s)
+      </p>
+      <p class="text-muted small mb-3">
+        Created: {{ team.created_at.strftime('%Y-%m-%d') }}
+      </p>
+      <a href="{{ url_for('team.team_detail', id=team.id) }}"
+         class="btn btn-sm btn-primary w-100">
+        View Team
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- الفرق التي أنت عضو فيها -->
+{% if member_teams %}
+<h6 class="fw-bold text-muted mb-3">Member Of</h6>
+<div class="row g-3 mb-4">
+  {% for team in member_teams %}
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <h6 class="fw-bold">{{ team.name }}</h6>
+        <span class="badge bg-secondary">Member</span>
+      </div>
+      <p class="text-muted small mb-2">
+        {{ team.members|length }} member(s)
+      </p>
+      <p class="text-muted small mb-3">
+        Owner: {{ team.owner.username }}
+      </p>
+      <a href="{{ url_for('team.team_detail', id=team.id) }}"
+         class="btn btn-sm btn-outline-primary w-100">
+        View Team
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- لا توجد فرق -->
+{% if not owned_teams and not member_teams %}
+<div class="text-center py-5">
+  <div class="fs-1"></div>
+  <h5 class="text-muted mt-3">No teams yet</h5>
+  <p class="text-muted">Create a team and invite your colleagues</p>
+  <a href="{{ url_for('team.new_team') }}"
+     class="btn btn-primary mt-2">
+    Create First Team
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

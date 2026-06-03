@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}{{ t.dashboard }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h4 class="fw-bold">
+    {{ t.welcome }}, {{ current_user.username }} 
+  </h4>
+  <div class="d-flex gap-2 mt-2 flex-wrap">
+    <a href="{{ url_for('dashboard.new_task') }}"
+       class="btn btn-primary btn-sm">
+      + {{ t.new_task }}
+    </a>
+    <a href="{{ url_for('dashboard.export_pdf') }}"
+       class="btn btn-outline-danger btn-sm">
+        {{ t.export_pdf }}
+    </a>
+    <a href="{{ url_for('dashboard.export_excel') }}"
+       class="btn btn-outline-success btn-sm">
+        {{ t.export_excel }}
+    </a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-2 fw-bold text-primary">{{ stats.total }}</div>
+      <div class="text-muted small">{{ t.total }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-2 fw-bold text-secondary">{{ stats.todo }}</div>
+      <div class="text-muted small">{{ t.todo }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-2 fw-bold text-warning">{{ stats.in_progress }}</div>
+      <div class="text-muted small">{{ t.in_progress }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card p-3 text-center">
+      <div class="fs-2 fw-bold text-success">{{ stats.done }}</div>
+      <div class="text-muted small">{{ t.done }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Progress -->
+{% if stats.total > 0 %}
+<div class="card mb-4 p-3">
+  <div class="d-flex justify-content-between mb-2">
+    <span class="fw-bold small">{{ t.progress }}</span>
+    <span class="small">
+      {{ ((stats.done / stats.total) * 100) | round(1) }}%
+    </span>
+  </div>
+  <div class="progress" style="height:10px">
+    <div class="progress-bar bg-success"
+         style="width:{{ (stats.done / stats.total) * 100 }}%">
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Recent Tasks -->
+<div class="card p-3">
+  <h6 class="fw-bold mb-3">{{ t.recent_tasks }}</h6>
+  {% if recent_tasks %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>{{ t.task }}</th>
+          <th>{{ t.priority }}</th>
+          <th>{{ t.status }}</th>
+          <th>{{ t.date }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in recent_tasks %}
+        <tr>
+          <td>{{ task.title }}</td>
+          <td>
+            <span class="badge badge-{{ task.priority }}">
+              {{ task.priority }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-{{ task.status }}">
+              {{ task.status }}
+            </span>
+          </td>
+          <td class="text-muted small">
+            {{ task.created_at.strftime('%Y-%m-%d') }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted text-center py-3">{{ t.no_tasks }} </p>
+  {% endif %}
+</div>
+{% endblock %}

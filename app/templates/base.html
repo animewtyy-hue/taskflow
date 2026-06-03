@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}TaskFlow{% endblock %}</title>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background: #f0f2f5;
+      transition: background 0.3s, color 0.3s;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ─── Sidebar ─────────────────────────── */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      position: fixed;
+      right: 0;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar .brand {
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 700;
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+      white-space: nowrap;
+    }
+    .sidebar a {
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      text-decoration: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-size: 0.95rem;
+    }
+    .sidebar a:hover {
+      color: #fff;
+      background: #334155;
+      border-right: 3px solid #6366f1;
+    }
+
+    /* ─── Dark Mode Button ────────────────── */
+    .dark-btn {
+      margin: 10px 15px;
+      padding: 8px 15px;
+      background: #334155;
+      color: #94a3b8;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: calc(100% - 30px);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .dark-btn:hover { background: #475569; color: #fff; }
+    
+
+    /* ─── Main Content ────────────────────── */
+    .main-content {
+      margin-right: 240px;
+      padding: 25px;
+      min-height: 100vh;
+      width: calc(100% - 240px);
+    }
+
+    /* ─── Cards ───────────────────────────── */
+    .stat-card {
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+
+    /* ─── Badges ──────────────────────────── */
+    .badge-todo        { background:#e2e8f0; color:#475569; }
+    .badge-in_progress { background:#fef3c7; color:#92400e; }
+    .badge-done        { background:#d1fae5; color:#065f46; }
+    .badge-high        { background:#fee2e2; color:#991b1b; }
+    .badge-medium      { background:#fef3c7; color:#92400e; }
+    .badge-low         { background:#d1fae5; color:#065f46; }
+
+    /* ─── Dark Mode ───────────────────────── */
+    body.dark { background: #0f172a; color: #e2e8f0; }
+    body.dark .card {
+      background: #1e293b;
+      border-color: #334155;
+      color: #e2e8f0;
+    }
+    body.dark .table { color: #e2e8f0; }
+    body.dark .table-light th {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    body.dark .form-control,
+    body.dark .form-select {
+      background: #1e293b;
+      border-color: #334155;
+      color: #e2e8f0;
+    }
+    body.dark .text-muted { color: #94a3b8 !important; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="brand"> TaskFlow</div>
+  <!-- زر Dark Mode -->
+  <button onclick="toggleDark()" id="darkBtn" class="dark-btn">
+    🌙 وضع الليل
+  </button>
+<!-- زر تبديل اللغة -->
+  <div class="d-flex gap-1 px-3 pb-2">
+    <a href="{{ url_for('set_lang', lang='ar') }}"
+       class="btn btn-sm w-50"
+       style="background:#334155; color:#94a3b8; border:none;">
+         AR
+    </a>
+    <a href="{{ url_for('set_lang', lang='en') }}"
+       class="btn btn-sm w-50"
+       style="background:#334155; color:#94a3b8; border:none;">
+         EN
+    </a>
+  </div>
+  <nav class="mt-2">
+    <a href="{{ url_for('dashboard.index') }}">
+      <i class="bi bi-speedometer2"></i>
+      {{ 'Dashboard' if session.get('lang') == 'en' else 'لوحة التحكم' }}
+    </a>
+    <a href="{{ url_for('dashboard.tasks') }}">
+      <i class="bi bi-check2-square"></i>
+      {{ 'Tasks' if session.get('lang') == 'en' else 'المهام' }}
+    </a>
+    <a href="{{url_for('dashboard.kanban')}}">
+          <i class="bi bi-kanban"></i>
+          {{'kanban' if session.get('lang') == 'en' else 'كانبان'}}
+        </a> 
+    <a href="{{url_for('ai.index')}}">
+          <i class="bi bi-robot"></i>
+          {{'AI Assistant' if session.get('lang') == 'en' else 'مساعد AI'}}
+        </a>      
+    <a href="{{ url_for('dashboard.projects') }}">
+      <i class="bi bi-folder2"></i>
+      {{ 'Projects' if session.get('lang') == 'en' else 'المشاريع' }}
+    </a>
+    <a href="{{ url_for('dashboard.charts') }}">
+      <i class="bi bi-bar-chart-line"></i>
+      {{ 'Statistics' if session.get('lang') == 'en' else 'الإحصائيات' }}
+    </a>
+    <a href="{{ url_for('team.index') }}">
+      <i class="bi bi-people"></i>
+      {{ 'Teams' if session.get('lang') == 'en' else 'الفرق' }}
+    </a>
+    <a href="{{ url_for('dashboard.notifications') }}">
+      <i class="bi bi-bell"></i>
+      {{ 'Notifications' if session.get('lang') == 'en' else 'الإشعارات' }}
+      {% set unread = namespace(count=0) %}
+      {% for n in current_user.notifications %}
+        {% if not n.is_read %}
+          {% set unread.count = unread.count + 1 %}
+        {% endif %}
+      {% endfor %}
+      {% if unread.count > 0 %}
+      <span class="badge bg-danger ms-auto">{{ unread.count }}</span>
+      {% endif %}
+    </a>
+    {% if current_user.role == 'admin' %}
+    <a href="{{ url_for('admin.index') }}">
+      <i class="bi bi-shield-check"></i>
+      {{ 'Admin' if session.get('lang') == 'en' else 'الإدارة' }}
+    </a>
+    {% endif %}
+    <a href="{{ url_for('dashboard.profile') }}">
+      <i class="bi bi-person-circle"></i>
+      {{ 'Profile' if session.get('lang') == 'en' else 'الملف الشخصي' }}
+    </a>
+    <a href="{{ url_for('auth.logout') }}">
+      <i class="bi bi-box-arrow-left"></i>
+      {{ 'Logout' if session.get('lang') == 'en' else 'تسجيل الخروج' }}
+    </a>
+  </nav>
+  
+   
+    {% set unread = namespace(count=0) %}
+    {% for n in current_user.notifications %}
+      {% if not n.is_read %}
+        {% set unread.count = unread.count + 1 %}
+      {% endif %}
+    {% endfor %}
+    {% if unread.count > 0 %}
+    <span class="notif-badge">{{ unread.count }}</span>
+    {% endif %}
+    Notifications
+  </a>
+        </div>      
+  
+
+<div class="main-content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+
+<script>
+  // تحميل الوضع المحفوظ
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+    document.getElementById('darkBtn').innerHTML = ' وضع النهار';
+  }
+
+  function toggleDark() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('darkBtn').innerHTML =
+      isDark ? ' وضع النهار' : ' وضع الليل';
+  }
+</script>
+</body>
+</html>

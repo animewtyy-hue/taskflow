@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}{{ t.statistics }} - TaskFlow{% endblock %}
+
+{% block content %}
+<h4 class="fw-bold mb-4">  {{ t.statistics }}</h4>
+
+<div class="row g-4">
+
+  <!-- الرسم الأول: حالة المهام -->
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3">
+          {{ t.tasks }} / {{ t.status }}
+      </h6>
+      <canvas id="statusChart"></canvas>
+    </div>
+  </div>
+
+  <!-- الرسم الثاني: الأولوية -->
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3">
+          {{ t.tasks }} / {{ t.priority }}
+      </h6>
+      <canvas id="priorityChart"></canvas>
+    </div>
+  </div>
+
+  <!-- الرسم الثالث: المشاريع -->
+  {% if project_names %}
+  <div class="col-md-12">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3">
+          {{ t.projects }}
+      </h6>
+      <canvas id="projectChart"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const todo        = {{ todo }};
+  const in_progress = {{ in_progress }};
+  const done        = {{ done }};
+  const high        = {{ high }};
+  const medium      = {{ medium }};
+  const low         = {{ low }};
+  const projectNames = {{ project_names | tojson }};
+  const projectTasks = {{ project_tasks | tojson }};
+
+  const todoLabel  = "{{ t.todo }}";
+  const ipLabel    = "{{ t.in_progress }}";
+  const doneLabel  = "{{ t.done }}";
+
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: [todoLabel, ipLabel, doneLabel],
+      datasets: [{
+        data: [todo, in_progress, done],
+        backgroundColor: ['#e2e8f0', '#fef3c7', '#d1fae5'],
+        borderColor:     ['#94a3b8', '#f59e0b', '#10b981'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  new Chart(document.getElementById('priorityChart'), {
+    type: 'bar',
+    data: {
+      labels: ['High', 'Medium', 'Low'],
+      datasets: [{
+        label: "{{ t.tasks }}",
+        data: [high, medium, low],
+        backgroundColor: ['#fee2e2', '#fef3c7', '#d1fae5'],
+        borderColor:     ['#ef4444', '#f59e0b', '#10b981'],
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  {% if project_names %}
+  new Chart(document.getElementById('projectChart'), {
+    type: 'bar',
+    data: {
+      labels: projectNames,
+      datasets: [{
+        label: "{{ t.tasks }}",
+        data: projectTasks,
+        backgroundColor: '#6366f1',
+        borderColor:     '#4f46e5',
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+  {% endif %}
+</script>
+{% endblock %}

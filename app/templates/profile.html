@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{{ t.profile }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"> {{ t.profile }}</h4>
+</div>
+
+<div class="row g-4">
+
+  <!-- بيانات المستخدم -->
+  <div class="col-md-8">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-4"> {{ t.edit }}</h6>
+      <form method="POST">
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Username</label>
+          <input type="text" name="username"
+                 class="form-control form-control-lg"
+                 value="{{ current_user.username }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Email</label>
+          <input type="email" name="email"
+                 class="form-control form-control-lg"
+                 value="{{ current_user.email }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">
+            New Password
+            <small class="text-muted fw-normal">
+              ({{ t.cancel }} if no change)
+            </small>
+          </label>
+          <input type="password" name="password"
+                 class="form-control form-control-lg"
+                 placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2">
+          <i class="bi bi-check-lg"></i> {{ t.save }}
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- إحصائيات المستخدم -->
+  <div class="col-md-4">
+
+    <div class="card p-4 text-center mb-3">
+      <div class="rounded-circle bg-primary text-white d-flex
+                  align-items-center justify-content-center mx-auto mb-3"
+           style="width:80px;height:80px;font-size:2rem;">
+        {{ current_user.username[0].upper() }}
+      </div>
+      <h5 class="fw-bold">{{ current_user.username }}</h5>
+      <p class="text-muted mb-1">{{ current_user.email }}</p>
+      <span class="badge bg-{{
+        'danger' if current_user.role == 'admin' else 'secondary' }}">
+        {{ current_user.role }}
+      </span>
+      <p class="text-muted small mt-2 mb-0">
+        {{ current_user.created_at.strftime('%Y-%m-%d') }}
+      </p>
+    </div>
+
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"> {{ t.statistics }}</h6>
+
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">{{ t.total }}</span>
+        <span class="fw-bold text-primary">{{ stats.total }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">{{ t.done }}</span>
+        <span class="fw-bold text-success">{{ stats.done }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">{{ t.notifications }}</span>
+        <span class="fw-bold text-info">{{ stats.comments }}</span>
+      </div>
+
+      {% if stats.total > 0 %}
+      <hr>
+      <div class="d-flex justify-content-between mb-1">
+        <small>{{ t.progress }}</small>
+        <small>
+          {{ ((stats.done / stats.total) * 100)|round(1) }}%
+        </small>
+      </div>
+      <div class="progress" style="height:8px">
+        <div class="progress-bar bg-success"
+             style="width:{{ (stats.done/stats.total)*100 }}%">
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

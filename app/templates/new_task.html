@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}مهمة جديدة - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"> إضافة مهمة جديدة</h4>
+  <a href="{{ url_for('dashboard.tasks') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i> رجوع
+  </a>
+</div>
+
+<div class="card p-4" style="max-width: 600px;">
+  <form method="POST">
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">عنوان المهمة *</label>
+      <input type="text" name="title"
+             class="form-control form-control-lg"
+             placeholder="اكتب عنوان المهمة" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">الوصف</label>
+      <textarea name="description" class="form-control"
+                rows="3"
+                placeholder="تفاصيل المهمة (اختياري)"></textarea>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label fw-bold">الأولوية</label>
+        <select name="priority" class="form-select">
+          <option value="low"> منخفضة</option>
+          <option value="medium" selected> متوسطة</option>
+          <option value="high"> عالية</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">الحالة</label>
+        <select name="status" class="form-select">
+          <option value="todo" selected> قيد الانتظار</option>
+          <option value="in_progress"> قيد التنفيذ</option>
+          <option value="done"> مكتملة</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-bold">المشروع</label>
+      <select name="project_id" class="form-select">
+        <option value="">بدون مشروع</option>
+        {% for project in projects %}
+        <option value="{{ project.id }}"
+          {% if selected_project == project.id|string %}
+          selected
+          {% endif %}>
+          {{ project.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label fw-bold">تاريخ الاستحقاق</label>
+      <input type="date" name="due_date" class="form-control">
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 py-2">
+      <i class="bi bi-plus-lg"></i> إضافة المهمة
+    </button>
+
+  </form>
+</div>
+{% endblock %}

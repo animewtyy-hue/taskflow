@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}{{ task.title }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"> تفاصيل المهمة</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('dashboard.edit_task', id=task.id) }}"
+       class="btn btn-outline-primary">
+      <i class="bi bi-pencil"></i> تعديل
+    </a>
+    <a href="{{ url_for('dashboard.tasks') }}"
+       class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-right"></i> رجوع
+    </a>
+  </div>
+</div>
+
+<!-- تفاصيل المهمة -->
+<div class="card p-4 mb-4">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <h5 class="fw-bold">{{ task.title }}</h5>
+    <div class="d-flex gap-2">
+      <span class="badge badge-{{ task.priority }}">
+        {{ task.priority }}
+      </span>
+      <span class="badge badge-{{ task.status }}">
+        {{ task.status }}
+      </span>
+    </div>
+  </div>
+
+  {% if task.description %}
+  <p class="text-muted mb-3">{{ task.description }}</p>
+  {% endif %}
+
+  <div class="row g-2">
+    <div class="col-md-4">
+      <small class="text-muted d-block"> تاريخ الإنشاء</small>
+      <span>{{ task.created_at.strftime('%Y-%m-%d') }}</span>
+    </div>
+    {% if task.due_date %}
+    <div class="col-md-4">
+      <small class="text-muted d-block"> تاريخ الاستحقاق</small>
+      <span class="text-danger">
+        {{ task.due_date.strftime('%Y-%m-%d') }}
+      </span>
+    </div>
+    {% endif %}
+    {% if task.project %}
+    <div class="col-md-4">
+      <small class="text-muted d-block"> المشروع</small>
+      <a href="{{ url_for('dashboard.project_detail', id=task.project.id) }}">
+        {{ task.project.name }}
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- قسم التعليقات -->
+<div class="card p-4">
+  <h6 class="fw-bold mb-4">
+     التعليقات
+    <span class="badge bg-secondary">{{ comments|length }}</span>
+  </h6>
+
+  <!-- إضافة تعليق -->
+  <form method="POST"
+        action="{{ url_for('dashboard.add_comment', id=task.id) }}"
+        class="mb-4">
+    <div class="mb-2">
+      <textarea name="content" class="form-control"
+                rows="3"
+                placeholder="اكتب تعليقك هنا..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-send"></i> إرسال التعليق
+    </button>
+  </form>
+
+  <hr>
+
+  <!-- قائمة التعليقات -->
+  {% if comments %}
+    {% for comment in comments %}
+    <div class="d-flex gap-3 mb-3">
+      <div class="rounded-circle bg-primary text-white d-flex
+                  align-items-center justify-content-center flex-shrink-0"
+           style="width:40px; height:40px; font-size:1.1rem;">
+        {{ comment.author.username[0].upper() }}
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-bold">{{ comment.author.username }}</span>
+          <small class="text-muted">
+            {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+          </small>
+        </div>
+        <p class="mb-1 mt-1">{{ comment.content }}</p>
+        {% if comment.user_id == current_user.id
+               or current_user.role == 'admin' %}
+        <form method="POST"
+              action="{{ url_for('dashboard.delete_comment', id=comment.id) }}">
+          <button class="btn btn-sm btn-link text-danger p-0"
+                  onclick="return confirm('حذف التعليق؟')">
+            <i class="bi bi-trash"></i> حذف
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% if not loop.last %}<hr>{% endif %}
+    {% endfor %}
+  {% else %}
+    <p class="text-muted text-center py-3">
+      لا توجد تعليقات بعد 
+    </p>
+  {% endif %}
+</div>
+{% endblock %}
